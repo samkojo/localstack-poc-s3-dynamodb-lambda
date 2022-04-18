@@ -45,6 +45,13 @@ ATTRIBUTEDEFINITIONS = [
     }
 ]
 
+# Add Table Item and Read Table Item
+name = 'hands-on-cloud'
+email = 'example@cloud.com'
+
+# Update Table Item
+phone_number = '123-456-1234'
+
 boto3.setup_default_session(profile_name=AWS_PROFILE)
 
 # logger config
@@ -67,6 +74,22 @@ def get_boto3_client(service):
         raise e
     else:
         return client
+
+def get_boto3_resource(service):
+    """
+    Initialize Boto3 client.
+    """
+    try:
+        resource = boto3.resource(
+            service,
+            region_name=AWS_REGION,
+            endpoint_url=ENDPOINT_URL
+        )
+    except Exception as e:
+        logger.exception('Error while connecting to LocalStack.')
+        raise e
+    else:
+        return resource
 
 def json_datetime_serializer(obj):
     """
@@ -115,6 +138,90 @@ def delete_dynamodb_table(table_name):
     else:
         return response
 
+def add_dynamodb_table_item(table_name, name, email):
+    """
+    adds a DynamoDB table.
+    """
+    try:
+        dynamodb_resource = get_boto3_resource("dynamodb")
+        table = dynamodb_resource.Table(table_name)
+        response = table.put_item(
+            Item={
+                'Name': name,
+                'Email': email
+            }
+        )
+
+    except ClientError:
+        logger.exception('Could not add the item to table.')
+        raise
+    else:
+        return response
+
+def read_dynamodb_table_item(table_name, name, email):
+    """
+    Reads from a DynamoDB table.
+    """
+    try:
+        dynamodb_resource = get_boto3_resource("dynamodb")
+        table = dynamodb_resource.Table(table_name)
+        response = table.get_item(
+            Key={
+                'Name': name,
+                'Email': email
+            }
+        )
+
+    except ClientError:
+        logger.exception('Could not read the item from table.')
+        raise
+    else:
+        return response
+
+def update_dynamodb_table_item(table_name, name, email, phone_number):
+    """
+    update the DynamoDB table item.
+    """
+    try:
+        dynamodb_resource = get_boto3_resource("dynamodb")
+        table = dynamodb_resource.Table(table_name)
+        response = table.update_item(
+            Key={
+                'Name': name,
+                'Email': email
+            },
+            UpdateExpression="set phone_number=:ph",
+            ExpressionAttributeValues={
+                ':ph': phone_number
+            }
+        )
+
+    except ClientError:
+        logger.exception('Could not update the item.')
+        raise
+    else:
+        return response
+
+def delete_dynamodb_table_item(table_name, name, email):
+    """
+    Deletes the DynamoDB table item.
+    """
+    try:
+        dynamodb_resource = get_boto3_resource("dynamodb")
+        table = dynamodb_resource.Table(table_name)
+        response = table.delete_item(
+            Key={
+                'Name': name,
+                'Email': email
+            }
+        )
+
+    except ClientError:
+        logger.exception('Could not delete the item.')
+        raise
+    else:
+        return response
+
 def main():
     """
     Main invocation function.
@@ -130,6 +237,28 @@ def main():
         dynamodb = delete_dynamodb_table(TABLENAME)
         logger.info(
             f'Details: {json.dumps(dynamodb, indent=4, default=json_datetime_serializer)}')
+    elif sys.argv[1] == 'addtableitem':
+        logger.info('Adding item...')
+        dynamodb = add_dynamodb_table_item(TABLENAME, name, email)
+        logger.info(
+            f'DynamoDB table item created: {json.dumps(dynamodb, indent=4)}')
+    elif sys.argv[1] == 'readtableitem':
+        logger.info('Reading item...')
+        dynamodb = read_dynamodb_table_item(TABLENAME, name, email)
+        logger.info(
+            f'Item details: {json.dumps(dynamodb, indent=4)}')
+    elif sys.argv[1] == 'updatetableitem':
+        logger.info('updateing item...')
+        dynamodb = update_dynamodb_table_item(
+            TABLENAME, name, email, phone_number)
+        logger.info(
+            f'Item details: {json.dumps(dynamodb, indent=4)}')
+    elif sys.argv[1] == 'deletetableitem':
+        logger.info('Deleteing item...')
+        dynamodb = delete_dynamodb_table_item(
+            TABLENAME, name, email)
+        logger.info(
+            f'Details: {json.dumps(dynamodb, indent=4)}')
     else: 
         print('Invalid command... "'+sys.argv[1]+'"')
 
