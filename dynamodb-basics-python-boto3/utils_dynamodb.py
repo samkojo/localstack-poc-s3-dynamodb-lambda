@@ -99,6 +99,21 @@ def create_dynamodb_table(table_name):
     else:
         return response
 
+def delete_dynamodb_table(table_name):
+    """
+    Creates a DynamoDB table.
+    """
+    try:
+        dynamodb_client = get_boto3_client("dynamodb")
+        response = dynamodb_client.delete_table(
+            TableName=table_name
+        )
+
+    except ClientError:
+        logger.exception('Could not delete the table.')
+        raise
+    else:
+        return response
 
 def main():
     """
@@ -110,6 +125,11 @@ def main():
         dynamodb = create_dynamodb_table(TABLENAME)
         logger.info(
         f'DynamoDB table created: {json.dumps(dynamodb, indent=4, default=json_datetime_serializer)}')
+    elif sys.argv[1] == 'deletetable':
+        logger.info('Deleteing DynamoDB table...')
+        dynamodb = delete_dynamodb_table(TABLENAME)
+        logger.info(
+            f'Details: {json.dumps(dynamodb, indent=4, default=json_datetime_serializer)}')
     else: 
         print('Invalid command... "'+sys.argv[1]+'"')
 
