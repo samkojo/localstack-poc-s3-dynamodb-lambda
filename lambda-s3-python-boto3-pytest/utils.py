@@ -2,13 +2,16 @@ import os
 import logging
 import json
 from zipfile import ZipFile
-
+from dotenv import load_dotenv
 import boto3
 
-AWS_REGION = 'us-east-1'
-AWS_PROFILE = 'localstack'
-ENDPOINT_URL = 'http://localhost:4566'
+load_dotenv()
+
+AWS_REGION = os.getenv('AWS_REGION')
+AWS_PROFILE = os.getenv('AWS_PROFILE')
+ENDPOINT_URL = os.getenv('ENDPOINT_URL')
 LAMBDA_ZIP = './function.zip'
+AWS_CONFIG_FILE = '~/.aws/config'
 
 boto3.setup_default_session(profile_name=AWS_PROFILE)
 
@@ -20,7 +23,7 @@ logging.basicConfig(level=logging.INFO,
 
 def get_boto3_client(service):
     """
-    Initialize Boto3 Lambda client.
+    Initialize Boto3 client.
     """
     try:
         lambda_client = boto3.client(
@@ -95,11 +98,56 @@ def invoke_function(function_name):
         lambda_client = get_boto3_client('lambda')
         response = lambda_client.invoke(
             FunctionName=function_name)
-        return json.loads(
-            response['Payload']
-            .read()
-            .decode('utf-8')
-        )
+        return (response['Payload']
+                .read()
+                .decode('utf-8')
+                )
     except Exception as e:
         logger.exception('Error while invoking function')
+        raise e
+
+
+def create_bucket(bucket_name):
+    """
+    Create a S3 bucket.
+    """
+    try:
+        s3_client = get_boto3_client('s3')
+        s3_client.create_bucket(
+            Bucket=bucket_name
+        )
+    except Exception as e:
+        logger.exception('Error while creating s3 bucket')
+        raise e
+
+
+def list_s3_bucket_objects(bucket_name):
+    """
+    List S3 buckets.
+    """
+    try:
+        s3_client = get_boto3_client('s3')
+        return s3_client.list_objects_v2(
+            Bucket=bucket_name
+        )['Contents']
+    except Exception as e:
+        logger.exception('Error while listing s3 bucket objects')
+        raise e
+
+
+def delete_bucket(bucket_name):
+    """
+    Delete a S3 bucket.
+    """
+    try:
+        s3_client = get_boto3_client('s3')
+        objects = list_s3_bucket_objects(bucket_name)
+        # empty the bucket before deleting
+        [s3_client.delete_object(Bucket=bucket_name, Key=obj['Key'])
+         for obj in objects]
+        s3_client.delete_bucket(
+            Bucket=bucket_name
+        )
+    except Exception as e:
+        logger.exception('Error while deleting s3 bucket')
         raise e
