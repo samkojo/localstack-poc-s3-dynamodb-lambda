@@ -1,4 +1,4 @@
-# Lambda S3 Python Boto3 PyTest
+# DynamoDB Basics Python Boto3
 
 ### Configurando variável de ambiente
 
@@ -39,44 +39,18 @@ python3 -m pip install boto3
 python3 -m pip install python-dotenv
 ```
 
-Para testar utilizaremos o Pytest então será necessário instalar
+Os arquivos utilizam variáveis contidas no arquivo `.env`
+
+### Criação da tabela
 
 ```bash
-pip3 install pytest
+python3 utils_dynamodb.py createtable
 ```
 
-## Lambda
-
-Utilizamos como exemplo para executarmos na lambda o arquivo `lambda.py` que faz upload de um arquivo para o BUCKET confirgurado no `.env` com um nome padrao `hands-on-cloud` e com conteudo `localstack-boto3-python`
-
-### Criar lambda e bucket
+- Retorna dados da tabela poc-python-dynamodb (CLI)
 
 ```bash
-python3 main.py create
-python3 main.py createbucket
-```
-
-### Executar lambda
-
-```bash
-python3 main.py invoke
-# ou 
-awslocal lambda invoke --function-name lambda /dev/stdout
-# ou
-aws lambda invoke --endpoint http://localhost:4566 --function-name lambda /dev/stdout
-```
-
-### Deletar lambda e bucket
-
-```bash
-python3 main.py delete
-python3 main.py deletebucket
-```
-
-### Testar lambda
-
-```bash
-pytest -s .
+awslocal dynamodb describe-table --table-name poc-python-dynamodb
 ```
 
 Referencias:
