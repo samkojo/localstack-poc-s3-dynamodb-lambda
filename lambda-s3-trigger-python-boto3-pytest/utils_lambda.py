@@ -1,10 +1,16 @@
 import os
 import logging
 import json
+from unittest import expectedFailure
 from zipfile import ZipFile
 from dotenv import load_dotenv
 import sys
 import boto3
+from botocore.exceptions import ClientError
+
+def get_json_from_file(file):
+    with open(file) as json_file:
+        return json.load(json_file)
 
 load_dotenv()
 
@@ -14,8 +20,11 @@ ENDPOINT_URL = os.getenv('ENDPOINT_URL')
 LAMBDA_ZIP = './function.zip'
 AWS_CONFIG_FILE = '~/.aws/config'
 BUCKET = os.getenv('BUCKET')
-LAMBDA_NAME = 'lambda-notif-s3'
+LAMBDA_NAME = os.getenv('LAMBDA_NAME')
+NOTIF_CONFIG_BUCKET = get_json_from_file("s3-notif-config.json")
 
+FILE_NAME = os.getenv('FILEPATH')
+OBJECT_NAME = os.getenv('FILENAME')
 boto3.setup_default_session(profile_name=AWS_PROFILE)
 
 # logger config
@@ -40,6 +49,21 @@ def get_boto3_client(service):
     else:
         return lambda_client
 
+def get_boto3_resource(service):
+    """
+    Initialize Boto3 resource.
+    """
+    try:
+        resource = boto3.resource(
+            service,
+            region_name=AWS_REGION,
+            endpoint_url=ENDPOINT_URL
+        )
+    except Exception as e:
+        logger.exception('Error while connecting to LocalStack.')
+        raise e
+    else:
+        return resource
 
 def create_lambda_zip(function_name):
     """
@@ -154,6 +178,37 @@ def delete_bucket(bucket_name):
     except Exception as e:
         logger.exception('Error while deleting s3 bucket')
         raise e
+
+def add_notification_bucket(bucket_name, notif_config):
+    """
+    Add put notification for a S3 Bucket.
+    """
+    try:
+        s3_resource = get_boto3_resource('s3')
+        bucket_notif = s3_resource.BucketNotification(bucket_name)
+        response = bucket_notif.put(
+            NotificationConfiguration = notif_config
+        )
+    except Exception as e:
+        logger.exception('Error while adding put notification for S3 bucket.')
+        raise e
+
+def add_file_bucket(bucket_name, file_name, object_name=None):
+    """
+    Add file to S3 Bucket.
+    """
+    try:
+        s3_client = get_boto3_client('s3')
+        if object_name is None:
+            object_name = os.path.basename(file_name)
+        response = s3_client.upload_file(
+            file_name, bucket_name, object_name)
+    except ClientError:
+        logger.exception('Could not upload file to S3 bucket.')
+        raise
+    else:
+        return response
+
 def main():
     """
     Main invocation function.
@@ -177,6 +232,15 @@ elif sys.argv[1] == 'deletebucket':
 elif sys.argv[1] == 'listbucket':
     print('\r\Listing bucket...')
     list_s3_bucket_objects(BUCKET)
+elif sys.argv[1] == 'addnotifbucket':
+    print('\r\Adding notification config for bucket...')
+    add_notification_bucket(BUCKET, NOTIF_CONFIG_BUCKET)
+elif sys.argv[1] == 'delnotifbucket':
+    print('\r\Adding notification config for bucket...')
+    add_notification_bucket(BUCKET, {})
+elif sys.argv[1] == 'addfilebucket':
+    print('\r\Adding file to bucket...')
+    add_file_bucket(BUCKET, FILE_NAME, OBJECT_NAME)
 else: 
     print('Invalid command... "'+sys.argv[1]+'"')
 
