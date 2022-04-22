@@ -1,4 +1,5 @@
 # LocalStack
+
 ## **Requisitos**
 
 - `python` (Python 3.6 up to 3.9 supported)
@@ -234,3 +235,51 @@ Alternativa simples: [https://www.npmjs.com/package/dynamodb-admin](https://www.
 Links:
 
 [https://onexlab-io.medium.com/localstack-dynamodb-8befdaac802b](https://onexlab-io.medium.com/localstack-dynamodb-8befdaac802b)
+
+### Lambda
+
+- Criação de lambda
+    
+    Para esse exemplo temos um simples código python que retorna a mensagem `{"message": "Hello User!"}`
+    
+    `lambda.py`
+    
+    ```python
+    import logging
+    
+    LOGGER = logging.getLogger()
+    LOGGER.setLevel(logging.INFO)
+    
+    def handler(event, context):
+        logging.info('Hands-on-cloud')
+        return {
+            "message": "Hello User!"
+        }
+    ```
+    
+    Precisaremos ter esse arquivo zipado e para esse exemplo foi zipado com nome `lambda_hello.zip`
+    
+    - Com o arquivo na pasta local podemos criar nosso lambda `lambda-hello`
+    
+    ```bash
+    awslocal lambda create-function --function-name lambda-hello --zip-file fileb://lambda_hello.zip --handler lambda.handler --runtime python3.8 --role role
+    # obs: o parametro '--role' se refere as permissões e são de uso obrigatório no ambiente da AWS, porém para o uso do LocalStack é opcional por isso deixei pra explorarmos a parte
+    ```
+    
+- Lista todos lambdas criados
+
+```bash
+awslocal lambda list-functions
+```
+
+- Executa lambda `lambda-hello` e exibe resultado no terminal
+
+```bash
+awslocal lambda invoke --function-name lambda-hello /dev/stdout
+```
+
+- Deleta lambda `lambda-hello`
+
+```bash
+awslocal lambda delete-function --function-name lambda-hello
+```
