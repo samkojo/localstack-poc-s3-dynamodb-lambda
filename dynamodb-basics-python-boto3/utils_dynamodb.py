@@ -1,19 +1,18 @@
 import json
 import logging
 from datetime import date, datetime
-import os
-from dotenv import load_dotenv
 import sys
 
 import boto3
 from botocore.exceptions import ClientError
 
-load_dotenv()
+# Default configs
+AWS_REGION = 'us-east-1'
+AWS_PROFILE = 'localstack'
+ENDPOINT_URL = 'http://localhost:4566'
 
-AWS_REGION = os.getenv('AWS_REGION')
-AWS_PROFILE = os.getenv('AWS_PROFILE')
-ENDPOINT_URL = os.getenv('ENDPOINT_URL')
-TABLENAME = os.getenv('TABLENAME')
+# Nome da tabela
+TABLENAME = 'poc-python-dynamodb'
 
 # Specifies the Resource Tags (Optional)
 TAGS = [

@@ -1,14 +1,5 @@
 # DynamoDB Basics Python Boto3
 
-### Configurando variável de ambiente
-
-Utilizando a porta padrão exposta pelo Localstack.
-
-```bash
-#Configure Environment Variables
-export LOCALSTACK_ENDPOINT_URL="http://localhost:4566"
-```
-
 ### Configurando AWS CLI
 
 ```bash
@@ -23,25 +14,17 @@ Default output format [None]:
 
 Criação de um AWS CLI profile chamado `localstack` com os padrões utilizados para uso local.
 
-Para verificar se a configuração ficou correta podemos executar o seguinte comando abaixo para listar os buckets
-
-```bash
-#Verify LocalStack configuration
-aws --profile localstack --endpoint-url=$LOCALSTACK_ENDPOINT_URL s3 ls
-```
-
 ## Ambiente virtual e instalação de dependências Python
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install boto3
-python3 -m pip install python-dotenv
 ```
 
-Os arquivos utilizam variáveis contidas no arquivo `.env`
-
 ### Criação de tabela
+
+Cria tabela com nome baseado na variavel `TABLENAME` com os campos chaves na estrutura baseado na variavel `ATTRIBUTEDEFINITIONS`
 
 ```bash
 python3 utils_dynamodb.py createtable
@@ -55,11 +38,15 @@ awslocal dynamodb describe-table --table-name poc-python-dynamodb
 
 ### Deleção de tabela
 
+Deleta tabela com nome baseado na variavel `TABLENAME`
+
 ```bash
 python3 utils_dynamodb.py deletetable
 ```
 
 ### Adição de registro em tabela
+
+Adiciona novo registro na tabela `TABLENAME` com os dados contigos em variavel `name` e `email`
 
 ```bash
 python3 utils_dynamodb.py addtableitem
@@ -67,17 +54,52 @@ python3 utils_dynamodb.py addtableitem
 
 ### Leitura de registro em tabela
 
+Le registro em tabela baseado nos campos chaves contidos em variavel `name` e `email`
+
 ```bash
 python3 utils_dynamodb.py readtableitem
 ```
 
+Se encontrado exibira as informações do registro
+
+```bash
+...
+"Item": {
+        "Name": "hands-on-cloud",
+        "Email": "example@cloud.com"
+    },
+"ResponseMetadata": {
+        "RequestId": "4US2YJLEW8WCGY5MSLRTTRK25P9PJS914YT157GBG2I1M96VOXF2",
+        "HTTPStatusCode": 200,
+...
+```
+
 ### Atualização de registro em tabela
+
+Atualiza registro com baseado nos campos chaves contidos em variavel `name` e `email` adicionando um novo campo `phone_number` preenchido com a informação contida na variável `phone_number` 
 
 ```bash
 python3 utils_dynamodb.py updatetableitem
 ```
 
+Executando novamente a leitura do registro `python3 utils_dynamodb.py readtableitem` deverá retornar também o novo campo inserido
+
+```bash
+...
+"Item": {
+        "phone_number": "123-456-1234",
+        "Email": "example@cloud.com",
+        "Name": "hands-on-cloud"
+    },
+    "ResponseMetadata": {
+        "RequestId": "6HFEN8UIJJLK82QZK4TRZXPG83X2WJTDMQTMVM2IPFSRC0RIRUF4",
+        "HTTPStatusCode": 200,
+...
+```
+
 ### Deleção de registro em tabela
+
+Deleta registro com baseado nos campos chaves contidos em variavel `name` e `email`
 
 ```bash
 python3 utils_dynamodb.py deletetableitem
