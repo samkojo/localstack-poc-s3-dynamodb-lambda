@@ -1,3 +1,4 @@
+import sys
 import os
 import logging
 import json
@@ -9,7 +10,7 @@ AWS_REGION = 'us-east-1'
 AWS_PROFILE = 'localstack'
 ENDPOINT_URL = 'http://localhost:4566'
 LAMBDA_ZIP = './function.zip'
-
+LAMBDA_NAME = 'lambda-hello'
 boto3.setup_default_session(profile_name=AWS_PROFILE)
 
 # logger config
@@ -103,3 +104,23 @@ def invoke_function(function_name):
     except Exception as e:
         logger.exception('Error while invoking function')
         raise e
+
+def main():
+    """
+    Main invocation function.
+    """
+
+    if sys.argv[1] == 'create':
+        print('\r\nCreating the lambda function...')
+        create_lambda(LAMBDA_NAME)
+    elif sys.argv[1] == 'invoke':
+        print('\r\nInvoking the lambda function...')
+        print(invoke_function(LAMBDA_NAME))
+    elif sys.argv[1] == 'delete':
+        print('\r\nDeleting the lambda function...')
+        delete_lambda(LAMBDA_NAME)
+    else: 
+        print('Invalid command... "'+sys.argv[1]+'"')
+
+if __name__ == '__main__':
+    main()
