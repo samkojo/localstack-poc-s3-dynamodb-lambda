@@ -1,14 +1,5 @@
 # S3 Basics Python
 
-### Configurando variável de ambiente
-
-Utilizando a porta padrão exposta pelo Localstack.
-
-```bash
-#Configure Environment Variables
-export LOCALSTACK_ENDPOINT_URL="http://localhost:4566"
-```
-
 ### Configurando AWS CLI
 
 ```bash
@@ -22,13 +13,6 @@ Default output format [None]:
 ```
 
 Criação de um AWS CLI profile chamado `localstack` com os padrões utilizados para uso local.
-
-Para verificar se a configuração ficou correta podemos executar o seguinte comando abaixo para listar os buckets
-
-```bash
-#Verify LocalStack configuration
-aws --profile localstack --endpoint-url=$LOCALSTACK_ENDPOINT_URL s3 ls
-```
 
 ## Ambiente virtual e instalação de dependências Python
 
@@ -85,6 +69,6 @@ python3 download_file.py
 python3 delete_bucket.py
 ```
 
-Referencias:
+Links:
 
 [https://hands-on.cloud/testing-python-aws-applications-using-localstack/](https://hands-on.cloud/testing-python-aws-applications-using-localstack/)
