@@ -1,14 +1,5 @@
 # S3 Trigger Lambda DynamoDB Python Boto3
 
-### Configurando variável de ambiente
-
-Utilizando a porta padrão exposta pelo Localstack.
-
-```bash
-#Configure Environment Variables
-export LOCALSTACK_ENDPOINT_URL="http://localhost:4566"
-```
-
 ### Configurando AWS CLI
 
 ```bash
@@ -22,13 +13,6 @@ Default output format [None]:
 ```
 
 Criação de um AWS CLI profile chamado `localstack` com os padrões utilizados para uso local.
-
-Para verificar se a configuração ficou correta podemos executar o seguinte comando abaixo para listar os buckets
-
-```bash
-#Verify LocalStack configuration
-aws --profile localstack --endpoint-url=$LOCALSTACK_ENDPOINT_URL s3 ls
-```
 
 ## Ambiente virtual e instalação de dependências Python
 
@@ -63,7 +47,23 @@ python3 utils.py s3 delete
 python3 utils.py lambda delete
 ```
 
-### Configurar lambda para ser executado ao adicionar um novo arquivo no Bucket S3
+### Gatilho lambda em bucket S3
+
+Configuramos um gatilho para a função lambda ao adicionarmos novo objeto no bucket S3 com base no `s3-notif-config.json`
+
+```json
+{
+    "LambdaFunctionConfigurations": [
+        {
+            "Id": "s3eventtriggerslambda",
+            "LambdaFunctionArn": "arn:aws:lambda:us-east-1:000000000000:function:lambda-s3-dynamodb",
+            "Events": ["s3:ObjectCreated:*"]
+        }
+    ]
+}
+```
+
+- Cria gatilho para o bucket `poc-s3-lambda-dynamodb`
 
 ```bash
 python3 utils.py s3 addnotification
@@ -74,10 +74,10 @@ awslocal s3api put-bucket-notification-configuration --bucket poc-s3-notif-lambd
 Para verificar se foi inserido corretamente
 
 ```bash
-awslocal s3api get-bucket-notification-configuration --bucket poc-s3-notif-lambda
+awslocal s3api get-bucket-notification-configuration --bucket poc-s3-lambda-dynamodb
 ```
 
-Para remover a configuração
+- Para remover o gatilho do bucket `poc-s3-lambda-dynamodb`
 
 ```bash
 python3 utils.py s3 deletenotification
