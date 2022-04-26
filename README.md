@@ -51,19 +51,19 @@ Inciando localstack ([serviços disponiveis](https://docs.localstack.cloud/aws/f
 - DynamoDB
 
 ```bash
-SERVICES=s3,lambda,logs,dynamodb localstack start
+SERVICES=s3,lambda,dynamodb,logs,iam localstack start
 ```
 
 Para iniciar com o debug ativo (maior quantidade de logs e logs mais detalhados)
 
 ```bash
-SERVICES=s3,lambda,dynamodb,logs DEBUG=1 localstack start
+SERVICES=s3,lambda,dynamodb,logs,iam DEBUG=1 localstack start
 ```
 
 Para executar em modo background sem manter o terminal ocupado exibindo os logs
 
 ```bash
-SERVICES=s3,lambda,logs,dynamodb localstack start -d
+SERVICES=s3,lambda,dynamodb,logs,iam localstack start -d
 ```
 
 Para finalizar o ambiente localstack quando rodando em backgroud
@@ -158,7 +158,7 @@ Links:
 ### Docker
 
 ```bash
-docker run --rm -it -p "4510-4559:4510-4559" -p "4566:4566" localstack/localstack -e "LOCALSTACK_SERVICES=s3,lambda,logs,dynamodb" -e "DEBUG=1"
+docker run --rm -it -p "4510-4559:4510-4559" -p "4566:4566" localstack/localstack -e "LOCALSTACK_SERVICES=s3,lambda,dynamodb,logs,iam" -e "DEBUG=1"
 ```
 
 ### Docker Compose
@@ -180,7 +180,7 @@ services:
       - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
       - HOST_TMP_FOLDER={$TMPDIR:-/tmp/}localstack
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - LOCALSTACK_SERVICES=s3,lambda,logs,dynamodb
+      - LOCALSTACK_SERVICES=s3,lambda,dynamodb,logs,iam
     volumes:
       - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
