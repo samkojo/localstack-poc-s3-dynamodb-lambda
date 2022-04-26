@@ -23,6 +23,43 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Permissões (opcional no localstack)
+
+Para acesso dos recursos da AWS é necessário o controle via IAM policy e IAM role.
+
+- IAM Policy
+    
+    Para nosso exemplo temos o arquivo `lambda-iam-policy.json` com a politica que permite o acesso a ações de logs e a leitura de objetos no s3.
+    
+    Para criarmos a politica com base no arquivo:
+    
+    ```bash
+    awslocal iam create-policy --policy-name lambda-iam-policy --policy-document file://lambda-iam-policy.json
+    
+    # ou
+    
+    aws iam create-policy --policy-name lambda-iam-policy --policy-document file://lambda-iam-policy.json --endpoint-url http://localhost:4566
+    ```
+    
+
+- IAM role
+    
+    ```bash
+    awslocal iam create-role --role-name lambda-s3-role --assume-role-policy-document "{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}"
+    
+    # ou 
+    
+    aws iam create-role --role-name lambda-s3-role --assume-role-policy-document "{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}"  --endpoint-url http://localhost:4566
+    ```
+    
+
+- Anexando IAM policy a uma IAM role
+    
+    ```bash
+    aws iam attach-role-policy --policy-arn arn:aws:iam::000000000000:policy/lambda-iam-policy --role-name lambda-s3-role --endpoint-url http://localhost:4566
+    ```
+    
+
 ## Lambda
 
 Utilizamos como exemplo para executarmos na lambda o arquivo `[lambda-s3-dynamodb.py](http://lambda-s3-dynamodb.py)` que sera executado ao carregarmos um arquivo ao S3, o nome do arquivo e o conteudo dele (importar somente arquivo de texto) serao armazenados em uma tabela do DynamoDB com o nome `files`
@@ -118,3 +155,14 @@ python3 utils.py dynamodb read poc.txt
 ```
 
 O retorno será o resultado da busca no DynamoDB com o item contendo o nome e o conteudo do arquivo
+
+```bash
+2022-04-20 11:06:10,500: INFO: Deleteing DynamoDB table...
+2022-04-20 11:06:10,584: INFO: Found credentials in shared credentials file: ~/.aws/credentials
+2022-04-20 11:06:10,727: INFO: Details: {
+    "Item": {
+        "Content": "teste",
+        "Name": "poc.txt"
+    },
+...
+```

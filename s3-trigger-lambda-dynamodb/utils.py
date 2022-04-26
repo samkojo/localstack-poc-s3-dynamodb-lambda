@@ -25,6 +25,7 @@ LAMBDA_NAME = os.getenv('LAMBDA_NAME')
 NOTIF_CONFIG_BUCKET = get_json_from_file("s3-notif-config.json")
 
 FILE_NAME = os.getenv('FILEPATH')
+ROLE = 'arn:aws:iam::000000000000:role/lambda-s3-role'
 
 TABLENAME = os.getenv('TABLENAME')
 # Specifies the Resource Tags (Optional)
@@ -220,7 +221,7 @@ def create_lambda(function_name):
         lambda_client.create_function(
             FunctionName=function_name,
             Runtime='python3.8',
-            Role='role',
+            Role=ROLE,
             Handler=function_name + '.handler',
             Code=dict(ZipFile=zipped_code)
         )
