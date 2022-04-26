@@ -1,5 +1,3 @@
-# LocalStack Basico
-
 ## **Requisitos**
 
 - `python` (Suportado versão Python 3.6 até 3.9)
@@ -66,6 +64,12 @@ Para executar em modo background sem manter o terminal ocupado exibindo os logs
 
 ```bash
 SERVICES=s3,lambda,logs,dynamodb localstack start -d
+```
+
+Para finalizar o ambiente localstack quando rodando em backgroud
+
+```json
+localstack stop
 ```
 
 ### Status
@@ -148,6 +152,45 @@ Links:
 [https://docs.aws.amazon.com/cli/latest/reference/#available-services](https://docs.aws.amazon.com/cli/latest/reference/#available-services)
 
 [https://docs.localstack.cloud/aws/feature-coverage/](https://docs.localstack.cloud/aws/feature-coverage/)
+
+## Utilizando LocalStack via Docker
+
+### Docker
+
+```bash
+docker run --rm -it -p "4510-4559:4510-4559" -p "4566:4566" localstack/localstack -e "LOCALSTACK_SERVICES=s3,lambda,logs,dynamodb" -e "DEBUG=1"
+```
+
+### Docker Compose
+
+```yaml
+version: "3.8"
+
+services:
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME-localstack_main}"
+    image: localstack/localstack
+    network_mode: bridge
+    ports:
+      - "4510-4559:4510-4559"
+      - "4566:4566"
+    environment:
+      - DEBUG=${DEBUG-1} # ativa modo debug por padrao
+      - DATA_DIR=${DATA_DIR-}
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
+      - HOST_TMP_FOLDER={$TMPDIR:-/tmp/}localstack
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LOCALSTACK_SERVICES=s3,lambda,logs,dynamodb
+    volumes:
+      - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+```
+
+Com o arquivo `docker-compose.yml` com o conteudo acima, basta executar:
+
+```yaml
+docker-compose up
+```
 
 ## Acessando serviços AWS no LocalStack via terminal
 
